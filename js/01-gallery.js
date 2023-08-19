@@ -1,43 +1,45 @@
-import { galleryItems } from "./gallery-items.js";
-const galleryList = document.querySelector(".gallery");
+import { galleryItems } from './gallery-items.js';
 
-function createGalleryItem(item) {
-  const listItem = document.createElement("li");
-  listItem.classList.add("gallery__item");
+const galleryList = document.querySelector('.gallery');
+const itemsMarkup = createGalleryItem(galleryItems);
 
-  const link = document.createElement("a");
-  link.classList.add("gallery__link");
-  link.href = item.original;
-
-  const image = document.createElement("img");
-  image.classList.add("gallery__image");
-  image.src = item.preview;
-  image.alt = item.description;
-  image.dataset.source = item.original;
-
-  link.appendChild(image);
-  listItem.appendChild(link);
-
-  return listItem;
+function createGalleryItem(items) {
+  return items
+    .map(({ preview, original, description }) => {
+      return `<div class="gallery__item">
+  <a class="gallery__link" href="${original}">
+    <img
+      class="gallery__image"
+      src="${preview}"
+      data-source="${original}"
+      alt="${description}"
+    />
+  </a>
+</div>`;
+    })
+    .join('');
 }
-function openModal(largeImageUrl) {
-  const instance = basicLightbox.create(`
-    <div class="modal">
-      <img  src="${largeImageUrl}" alt="Image description" />
-    </div>
-  `);
 
+galleryList.insertAdjacentHTML('beforeend', itemsMarkup);
+
+function openModal(event) {
+  event.preventDefault();
+  if (event.target.nodeName !== "IMG") return;
+
+  const isItemImage = event.target.classList.contains('gallery__image');
+  if (!isItemImage) return;
+
+  const largeImageUrl = event.target.dataset.source;
+
+  const instance = basicLightbox.create(`
+     <div class="modal">
+       <img  src="${largeImageUrl}" alt="description" />
+     </div>
+  `);
   instance.show();
 }
-galleryList.addEventListener("click", (event) => {
-  event.preventDefault();
-  if (event.target.classList.contains("gallery__image")) {
-    const largeImageUrl = event.target.dataset.source;
-    openModal(largeImageUrl);
-  }
-});
-galleryItems.forEach((item) => {
-  const galleryItem = createGalleryItem(item);
-  galleryList.appendChild(galleryItem);
-});
-console.log(galleryItems);
+galleryList.addEventListener('click', openModal);
+
+
+
+
